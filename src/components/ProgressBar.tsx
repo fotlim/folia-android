@@ -164,12 +164,12 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
             </span>
 
             <div
-                className={`relative h-1.5 flex-1 flex items-center group bg-[var(--folium-progress-track)] ${edgeStyle === 'rounded' ? 'rounded-sm md:rounded-full' : ''} ${disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
+                className={`relative h-1.5 flex-1 flex items-center group bg-[var(--folium-progress-track)] ${edgeStyle === 'rounded' ? 'rounded-full' : ''} ${disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
                 data-folium-part="progress.track"
             >
                 <div
                     ref={progressRef}
-                    className={`absolute top-0 left-0 h-full pointer-events-none bg-[var(--folium-progress-fill)] ${edgeStyle === 'rounded' ? 'rounded-sm md:rounded-full' : ''}`}
+                    className={`absolute top-0 left-0 h-full pointer-events-none bg-[var(--folium-progress-fill)] ${edgeStyle === 'rounded' ? 'rounded-full' : ''}`}
                     data-folium-part="progress.fill"
                     style={{
                         width: '100%',

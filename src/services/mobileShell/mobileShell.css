@@ -25,6 +25,13 @@ html[data-folia-shell='android'] {
     html[data-folia-shell='android'] [data-ponder='player-bar'] {
         width: min(100%, 100%);
     }
+
+    /* The expanded bar sits over the wall, and its glass is translucent enough that the track card
+     * behind it shows through and collides with the title and progress labels. On a phone the expanded
+     * state is the main control surface, so it gets a solid-enough backing to be readable. */
+    html[data-folia-shell='android'] [data-ponder='player-bar'].rounded-3xl {
+        background-color: color-mix(in srgb, var(--bg-color, #09090b) 90%, transparent);
+    }
 }
 
 /* A 20:9 phone held sideways is only 360 CSS px tall. The seam gives its tab column whatever the

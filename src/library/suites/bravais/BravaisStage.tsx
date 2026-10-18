@@ -11,7 +11,6 @@ import {
     isHorizontalSeamAnchor,
     isPinnedSeamAnchor,
     PINNED_SEAM_BAR_PX,
-    PINNED_SEAM_STRIP_PX,
 } from '../../../utils/libraryWallSeamAnchor';
 import type { LibrarySuiteStageProps } from '../../core/suite/suite.contract';
 import { BRAVAIS_METRICS, BRAVAIS_OVERSCAN, BRAVAIS_SEAM_ACRYLIC_BLUR } from './bravaisConstants';
@@ -259,9 +258,10 @@ const BravaisStage: React.FC<LibrarySuiteStageProps> = ({
             return;
         }
         const horizontal = isHorizontalSeamAnchor(seamAnchor);
+        // 竖条按视口比例取宽：360px 的手机上给到 ~310px（够放整行页签），桌面上封顶 340px。
         const width = horizontal
             ? view.width
-            : Math.round(Math.min(view.width, Math.max(280, seam.rendered.width || PINNED_SEAM_STRIP_PX)));
+            : Math.round(Math.min(340, Math.max(232, view.width * 0.86)));
         const height = horizontal ? PINNED_SEAM_BAR_PX : view.height;
         const x = seamAnchor === 'right' ? view.width - width : 0;
         const y = seamAnchor === 'bottom' ? view.height - height : 0;
