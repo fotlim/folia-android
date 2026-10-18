@@ -177,9 +177,9 @@ const getApiBase = async () => {
     return API_BASE;
   }
 
-  // code 标签让 provider 认出“未配置”（持久，不是暂时失败）；message 原文不变，诊断依赖它。
+  // code 标签让 provider 认出“未配置”（持久，不是暂时失败）；message 里指出去哪里填地址。
   throw Object.assign(
-    new Error("Failed to access environment variables for API base. Please configure VITE_NETEASE_API_BASE."),
+    new Error("Failed to access environment variables for API base. Open Settings → online music endpoint and enter the gateway address."),
     { code: NETEASE_API_BASE_MISSING },
   );
 };

@@ -42,6 +42,35 @@ html[data-folia-view='player'] .lattice-tools {
     display: none;
 }
 
+/* 手机上返回控件常驻：隐藏式（bravais 的 is-concealed）靠鼠标悬停热区才出现，触摸设备没有悬停，
+ * 那颗按钮会一直看不见。这里让它始终显示，并保留 hover/focus 的反馈。 */
+html[data-folia-shell='android'] .lattice-back.is-concealed:not(.is-revealed):not(:focus-visible) {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+}
+
+/* 窄屏文字要能完整显示：页签、工具项、播放条标题都允许换行，宁可高一点也不要截断。 */
+html[data-folia-shell='android'] .bravais-seam-home-tab,
+html[data-folia-shell='android'] .lattice-tools-action,
+html[data-folia-shell='android'] .lattice-tools-quick,
+html[data-folia-shell='android'] [data-ponder='player-bar'] {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    hyphens: auto;
+}
+
+/* 播放条标题最多两行，超出才收尾，不会因一行放不下而变成省略号。 */
+html[data-folia-shell='android'] [data-ponder='player-bar'] .truncate {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
 /* A 20:9 phone held sideways is only 360 CSS px tall. The seam gives its tab column whatever the
  * tool column below it does not take, which there is 60px - one and a half tabs, and the rest of the
  * navigation is clipped by the seam's own `overflow: hidden`. Giving the column a floor and letting
