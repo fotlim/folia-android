@@ -242,9 +242,12 @@ const main = async () => {
         await clickByText('全部歌曲');
         await clickByText('播放全部');
         await page.waitForTimeout(2500);
-        // The bar expands on hover; capture that state too, since its radius and layout differ.
-        await page.hover('[data-ponder="player-bar"]').catch(() => undefined);
-        await page.waitForTimeout(1200);
+        // 触摸端不再悬停展开：点一下迷你条才展开，这里按同样的方式展开后再截图。
+        const bar = page.locator('[data-ponder="player-bar"]').first();
+        if (await bar.count() > 0) {
+            await bar.click({ position: { x: 20, y: 20 } }).catch(() => undefined);
+            await page.waitForTimeout(1200);
+        }
     }
 
     const report = await page.evaluate(MEASURE);

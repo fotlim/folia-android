@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, type CSSProperties, type MouseEvent } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { WallSlot } from '../../../components/wall/wallSlots';
 import { BRAVAIS_BLOCK_SHAPE, collectShapeSlots } from './bravaisWallShape';
@@ -11,6 +11,7 @@ import {
     isHorizontalSeamAnchor,
     isPinnedSeamAnchor,
     PINNED_SEAM_BAR_PX,
+    PINNED_SEAM_RAIL_PX,
     PINNED_SEAM_STRIP_PX,
 } from '../../../utils/libraryWallSeamAnchor';
 import type { LibrarySuiteStageProps } from '../../core/suite/suite.contract';
@@ -139,6 +140,11 @@ const BravaisStage: React.FC<LibrarySuiteStageProps> = ({
     const seamAnchor = useLibraryWallLookStore(state => state.seamAnchor);
     const pinnedSeam = isPinnedSeamAnchor(seamAnchor);
     pinnedRef.current = pinnedSeam;
+    // 贴边面板可以拖走，也可以缩成一条图标列。
+    const [pinnedOffset, setPinnedOffset] = useState({ x: 0, y: 0 });
+    const [pinnedMinimized, setPinnedMinimized] = useState(false);
+    const pinnedOffsetRef = useRef(pinnedOffset);
+    pinnedOffsetRef.current = pinnedOffset;
     const { wallLook, seamLook } = useBravaisWallLook(reportPlayerOcclusion, reportPlayerBackdrop);
     const view = useBravaisViewport(rootRef);
     const reducedMotion = useReducedMotionFor('lattice');
@@ -242,6 +248,9 @@ const BravaisStage: React.FC<LibrarySuiteStageProps> = ({
     /**
      * 缝被钉在某一侧时，它的位置由这里写：贴边、不跟着墙面移动。墙那一侧不再为缝开口
      * （useBravaisFrame 在 pinnedRef 为真时把 openWidth 压成 0），所以拖动只移动墙，缝原地不动。
+     *
+     * 面板还能被拖到别处（pinnedOffset）并缩小成一条图标列（pinnedMinimized）：手机上一整列页签
+     * 会把墙全挡住，缩起来只留工具与账户图标，展开再点回来。
      */
     useLayoutEffect(() => {
         const element = seamRef.current;
@@ -251,6 +260,7 @@ const BravaisStage: React.FC<LibrarySuiteStageProps> = ({
             element.style.width = '';
             element.style.transform = '';
             element.style.visibility = '';
+            element.removeAttribute('data-pinned-minimized');
             return;
         }
         // 钉住时缝要真的展开：用户把它折起来（hidden）的话仍然尊重折叠。
@@ -259,17 +269,76 @@ const BravaisStage: React.FC<LibrarySuiteStageProps> = ({
             return;
         }
         const horizontal = isHorizontalSeamAnchor(seamAnchor);
-        // 竖条按视口比例取宽：360px 的手机上给到 ~310px（够放整行页签），桌面上封顶 340px。
-        // 竖条宽度对齐底部工具列：窄条，不占半个屏幕。
-        const width = horizontal ? view.width : PINNED_SEAM_STRIP_PX;
+        const strip = pinnedMinimized ? PINNED_SEAM_RAIL_PX : PINNED_SEAM_STRIP_PX;
+        const width = horizontal ? view.width : strip;
         const height = horizontal ? PINNED_SEAM_BAR_PX : view.height;
-        const x = seamAnchor === 'right' ? view.width - width : 0;
-        const y = seamAnchor === 'bottom' ? view.height - height : 0;
+        const baseX = seamAnchor === 'right' ? view.width - width : 0;
+        const baseY = seamAnchor === 'bottom' ? view.height - height : 0;
+        // 拖动偏移只在范围内生效，面板不会被拖出屏幕。
+        const maxX = Math.max(0, view.width - width);
+        const maxY = Math.max(0, view.height - height);
+        const x = Math.min(maxX, Math.max(0, baseX + pinnedOffset.x));
+        const y = Math.min(maxY, Math.max(0, baseY + pinnedOffset.y));
+        if (pinnedMinimized) element.dataset.pinnedMinimized = '';
+        else element.removeAttribute('data-pinned-minimized');
         element.style.transform = `translate3d(${x}px, ${y}px, 0)`;
         element.style.width = `${width}px`;
         element.style.height = `${height}px`;
         element.style.visibility = 'visible';
-    }, [pinnedSeam, seamAnchor, seam.level, seam.rendered.width, seamRef, view]);
+    }, [pinnedSeam, seamAnchor, seam.level, seam.rendered.width, seamRef, view, pinnedMinimized, pinnedOffset]);
+
+    /**
+     * 面板的拖动与「缩小」：拖动由标题区/空白处发起（按钮上的按下留给按钮自己），
+     * 缩小用原来的折叠键——它把面板折成一条图标列，而不是把整条缝藏起来。
+     */
+    useEffect(() => {
+        const element = seamRef.current;
+        if (!element || !pinnedSeam) return;
+
+        let start: { pointerX: number; pointerY: number; offsetX: number; offsetY: number } | null = null;
+
+        const onPointerDown = (event: PointerEvent) => {
+            if (event.button !== 0) return;
+            if ((event.target as Element).closest('button, a, input, textarea, [role="tab"]')) return;
+            start = {
+                pointerX: event.clientX,
+                pointerY: event.clientY,
+                offsetX: pinnedOffsetRef.current.x,
+                offsetY: pinnedOffsetRef.current.y,
+            };
+            element.setPointerCapture(event.pointerId);
+        };
+        const onPointerMove = (event: PointerEvent) => {
+            if (!start) return;
+            setPinnedOffset({
+                x: start.offsetX + (event.clientX - start.pointerX),
+                y: start.offsetY + (event.clientY - start.pointerY),
+            });
+        };
+        const endDrag = () => { start = null; };
+
+        // 捕获阶段拦下折叠键：贴边时不折叠整条缝，改成缩小 / 展开这条图标列。
+        const onClickCapture = (event: globalThis.MouseEvent) => {
+            const hit = (event.target as Element).closest('[data-bravais-seam-action="hide"]');
+            if (!hit) return;
+            event.preventDefault();
+            event.stopPropagation();
+            setPinnedMinimized(minimized => !minimized);
+        };
+
+        element.addEventListener('pointerdown', onPointerDown);
+        element.addEventListener('pointermove', onPointerMove);
+        element.addEventListener('pointerup', endDrag);
+        element.addEventListener('pointercancel', endDrag);
+        element.addEventListener('click', onClickCapture, true);
+        return () => {
+            element.removeEventListener('pointerdown', onPointerDown);
+            element.removeEventListener('pointermove', onPointerMove);
+            element.removeEventListener('pointerup', endDrag);
+            element.removeEventListener('pointercancel', endDrag);
+            element.removeEventListener('click', onClickCapture, true);
+        };
+    }, [pinnedSeam, seamRef]);
 
     // 此刻渲染着的 slot（按显示的形状裁剪，见下面 useBravaisDisplay 之后）。
     const slotsRef = useRef<readonly WallSlot[]>([]);

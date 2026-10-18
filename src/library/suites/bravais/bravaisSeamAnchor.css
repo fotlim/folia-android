@@ -280,3 +280,28 @@
     flex: none;
     align-self: center;
 }
+
+/* 缩小态：只留一条图标列（账户与工具），页签与标题收起来。 */
+[data-pinned-minimized] > .bravais-seam .bravais-seam-home {
+    padding: 10px 6px;
+    gap: 8px;
+}
+
+[data-pinned-minimized] > .bravais-seam .bravais-seam-home-title,
+[data-pinned-minimized] > .bravais-seam .bravais-seam-home-side,
+[data-pinned-minimized] > .bravais-seam .bravais-seam-home-middle,
+[data-pinned-minimized] > .bravais-seam .bravais-seam-account span {
+    display: none;
+}
+
+[data-pinned-minimized] > .bravais-seam .bravais-seam-home-head,
+[data-pinned-minimized] > .bravais-seam .bravais-seam-home-nav-content {
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+[data-pinned-minimized] > .bravais-seam .bravais-seam-account,
+[data-pinned-minimized] > .bravais-seam .bravais-seam-dock {
+    align-self: center;
+}

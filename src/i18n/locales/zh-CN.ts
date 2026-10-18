@@ -3420,6 +3420,7 @@ export default {
     "play": "播放",
     "pause": "暂停",
     "collapse": "收起",
+    "settings": "设置",
     "like": "收藏",
     "unlike": "取消收藏",
     "loopOff": "关闭循环",

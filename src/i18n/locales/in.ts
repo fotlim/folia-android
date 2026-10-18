@@ -3412,6 +3412,7 @@ export default {
     "play": "Putar",
     "pause": "Jeda",
     "collapse": "Ciutkan",
+    "settings": "Pengaturan",
     "like": "Suka",
     "unlike": "Batal Suka",
     "loopOff": "Ulangi Mati",

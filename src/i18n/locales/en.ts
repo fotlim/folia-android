@@ -3420,6 +3420,7 @@ export default {
     "play": "Play",
     "pause": "Pause",
     "collapse": "Collapse",
+    "settings": "Settings",
     "like": "Like",
     "unlike": "Unlike",
     "loopOff": "Loop off",

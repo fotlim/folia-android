@@ -1,10 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronDown, Music, Pause, Play } from 'lucide-react';
+import { ChevronDown, Music, Pause, Play, Settings } from 'lucide-react';
 import { MotionValue } from 'framer-motion';
 import ProgressBar from './ProgressBar';
 import { PlayerState, LyricData, Theme } from '../types';
+import { useSettingsModalStore } from '../stores/useSettingsModalStore';
 import LyricsTimelineModal from './modal/LyricsTimelineModal';
 import TrackTitleNavigator from './floating-player/TrackTitleNavigator';
 import PlayerControlSlotButton from './floating-player/PlayerControlSlotButton';
@@ -394,6 +395,18 @@ const FloatingPlayerControls: React.FC<FloatingPlayerControlsProps> = ({
                             ${isPositioning ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'}
                             ${showExpanded ? `px-4 py-4 ${glassBgExpanded} w-full` : `p-1.5 ${glassBgCollapsed} w-auto`}`}
                     >
+                        {/* 设置入口就放在播放条上：手机上另起一颗悬浮设置键会和播放条、提示条抢位置。 */}
+                        {showExpanded && !isPositioning && (
+                            <button
+                                type="button"
+                                aria-label={t('player.settings')}
+                                title={t('player.settings')}
+                                onClick={() => useSettingsModalStore.getState().openSettings()}
+                                className="absolute left-1.5 top-1.5 z-10 grid h-7 w-7 place-items-center rounded-full bg-white/10 text-white/70 transition-colors hover:bg-white/20"
+                            >
+                                <Settings size={15} aria-hidden />
+                            </button>
+                        )}
                         {/* 展开后收起：触摸设备上没有「移开鼠标」，需要一个明确的返回迷你条入口。 */}
                         {showExpanded && !isPositioning && (
                             <button
