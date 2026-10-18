@@ -6,6 +6,7 @@ import { withLoginRequestLimit } from '../login/loginRequestLimit';
 import { withOnlineRequestLimit } from '../failure/onlineRequestLimit';
 import { errorFields } from '../../../utils/errorText';
 import { getRuntimeServerEndpoint } from '../../runtimeConfig';
+import { canServeNeteaseDirectly, requestNeteaseDirectly } from '../../mobileShell/directNetease';
 
 type UnavailableSongReplacement = {
   replacementSong: SongResult;
@@ -189,6 +190,16 @@ const getApiBase = async () => {
 // the sign-in's limit; an HTTP error answer to it throws NeteaseLoginHttpError instead of being read as
 // an answer. 'online': a song's address or a collection's tracks, with the limit of online requests.
 const fetchWithCreds = async (endpoint: string, options: RequestInit = {}, limit?: 'sign-in' | 'online') => {
+  // Android 上没有部署后端时先走原生直连：网易云的公开接口匿名可用，搜索、歌词、歌单、
+  // 非 VIP 的播放地址都能拿到；登录之类要靠网关，会落回下面的「未配置」错误。
+  if (!getConfiguredApiBase() && canServeNeteaseDirectly(endpoint)) {
+    const payload = await requestNeteaseDirectly(endpoint);
+    return new Response(JSON.stringify(payload), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
   const base = await getApiBase();
   const url = `${base}${endpoint}`;
   // Ensure we send credentials to persist session (cookies)

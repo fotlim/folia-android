@@ -94,6 +94,8 @@ public final class FoliaBridge {
             case "saf.release":
                 files.releaseToken(params.optString("token"));
                 return new JSONObject().put("ok", true);
+            case "net.http":
+                return DirectHttp.get(params.optString("url"), params.optString("cookie"));
             case "media.update": {
                 JSONObject state = params.optJSONObject("state");
                 PlaybackService.update(activity, state == null ? "{}" : state.toString());
