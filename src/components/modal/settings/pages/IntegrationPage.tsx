@@ -7,6 +7,7 @@ import { useStageSettingsStore } from '../../../../stores/useStageSettingsStore'
 import { Button, CopyValue, Group, Reveal, Row, Status, Toggle, Value, type SettingsOptionDef } from '../kit';
 import NavidromeRows from './integration/NavidromeRows';
 import AndroidServerRows from './integration/AndroidServerRows';
+import NeteaseAccountRow from './integration/NeteaseAccountRow';
 import { O, SERVICES, STREAMING } from './integration/options';
 import { DesktopStageRows, WebStageRows } from './integration/StageModeRows';
 import SyncServerRows from './integration/SyncServerRows';
@@ -44,6 +45,7 @@ const IntegrationPage: React.FC = () => {
                 <NavidromeRows />
                 <SyncServerRows />
                 {isAndroidShell() && <AndroidServerRows />}
+                <NeteaseAccountRow />
                 {isElectron && (
                     <>
                         <Row option={O.discord} hint={t('options.discordRichPresenceDesc')}>

@@ -36,12 +36,46 @@ html[data-folia-shell='android'] {
     }
 }
 
-/* 播放页不要再放墙面工具：设置已经并进播放条，两套控件在手机上会叠在一起。
- * 墙的 chrome 常驻在资料库那一层，视图标记由 AppOverlays 写到 <html data-folia-view>。
- * 手机壳内整块墙面工具（右下角那颗圆钮）都不显示：书库面板里已经有搜索、设置与「更多」，
- * 两颗设置入口叠在一起只会挡住内容。 */
-html[data-folia-shell='android'] .lattice-tools {
-    display: none;
+/* 手机上的圆角统一成一套「随内容大小自适应」的尺度：同一档的盒子用同一个半径，小控件由 22% 上限
+ * 收成胶囊，大面板够宽时才拿到完整半径。避免同一个界面里出现 8 / 12 / 28 / 全圆 四种角。 */
+html[data-folia-shell='android'] {
+    --folia-radius-control: 10px;
+    --folia-radius-card: 14px;
+    --folia-radius-window: 22px;
+}
+
+html[data-folia-shell='android'] .st-card,
+html[data-folia-shell='android'] .st-pop {
+    border-radius: min(var(--folia-radius-card), 22%);
+}
+
+html[data-folia-shell='android'] .st-window {
+    border-radius: min(var(--folia-radius-window), 6%);
+}
+
+html[data-folia-shell='android'] .st-row button,
+html[data-folia-shell='android'] .st-row input {
+    border-radius: min(var(--folia-radius-control), 22%);
+}
+
+/* 播放条：常态是迷你方块，展开是卡片，两者的角都跟着自己的尺寸走。 */
+html[data-folia-shell='android'] [data-ponder='player-bar'] {
+    border-radius: min(var(--folia-radius-card), 22%);
+}
+
+html[data-folia-shell='android'] [data-ponder='player-bar'].rounded-3xl {
+    border-radius: min(var(--folia-radius-window), 18%);
+}
+
+/* 书库面板：贴边竖条是方的（贴满整条边），缩小成浮窗后才是带角的卡片。 */
+html[data-folia-shell='android'] [data-pinned-minimized] > .bravais-seam {
+    border-radius: min(var(--folia-radius-window), 12%);
+}
+
+/* 登录窗口与命令面板这类弹层。 */
+html[data-folia-shell='android'] .login-window,
+html[data-folia-shell='android'] [data-folia-dialog] {
+    border-radius: min(var(--folia-radius-window), 5%);
 }
 
 /* 手机上返回控件常驻：隐藏式（bravais 的 is-concealed）靠鼠标悬停热区才出现，触摸设备没有悬停，
@@ -110,4 +144,10 @@ html[data-folia-shell='android'] [data-ponder='player-bar'] .truncate {
 html[data-folia-shell='android'] input:focus,
 html[data-folia-shell='android'] textarea:focus {
     scroll-margin-block: 96px;
+}
+
+/* 手机壳内整块墙面工具（右下角那颗圆钮）都不显示：书库面板里已经有搜索、设置与「更多」，
+ * 两颗设置入口叠在一起只会挡住内容。 */
+html[data-folia-shell='android'] .lattice-tools {
+    display: none;
 }

@@ -754,6 +754,16 @@ export const neteaseApi = {
     return fetchWithCreds(`/login/qr/key`, {}, 'sign-in');
   },
 
+  /**
+   * 账号密码登录。接口要签名，只有后端能算（网关或桌面端自带的本地后端），所以这里只是把请求交给它；
+   * 登录态留在后端那一份 Cookie 里，客户端不用拿。
+   */
+  loginCellphone: async (phone: string, password: string, countrycode?: string) => {
+    const query = new URLSearchParams({ phone, password });
+    if (countrycode) query.set('countrycode', countrycode);
+    return fetchWithCreds(`/login/cellphone?${query.toString()}`, {}, 'sign-in');
+  },
+
   createQr: async (key: string) => {
     return fetchWithCreds(`/login/qr/create?key=${key}&qrimg=true`, {}, 'sign-in');
   },

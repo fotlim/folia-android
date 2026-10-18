@@ -18,6 +18,7 @@ export const O = {
     syncUrl: option(SERVICES, 'r2SyncWorkerUrl', 'options.r2SyncWorkerUrl'),
     syncToken: option(SERVICES, 'r2SyncToken', 'options.r2SyncToken'),
     androidServers: option(SERVICES, 'androidServers', 'options.androidServers'),
+    neteaseAccount: option(SERVICES, 'neteaseAccount', 'options.neteaseAccount'),
     discord: option(SERVICES, 'discordRichPresence', 'options.discordRichPresence', { electronOnly: true }),
     scrobble: option(SERVICES, 'scrobbleSettings', 'options.neteaseScrobble'),
     transparentBackground: option(STREAMING, 'transparentPlayerBackground', 'options.transparentPlayerBackground'),

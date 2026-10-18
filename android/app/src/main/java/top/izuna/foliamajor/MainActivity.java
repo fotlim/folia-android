@@ -118,7 +118,8 @@ public class MainActivity extends AppCompatActivity implements PlaybackService.T
 
         webView.clearCache(true);
 
-        webView.loadUrl(START_URL);
+        // 每次启动换一个 URL 参数：WebView 会把 index.html 也缓存住，旧 HTML 指向旧的哈希文件，于是装了新 APK 却还在跑旧包。
+        webView.loadUrl(START_URL + "?launch=" + System.currentTimeMillis());
         warnIfWebViewIsTooOld();
     }
 
