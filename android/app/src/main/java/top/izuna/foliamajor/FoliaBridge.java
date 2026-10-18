@@ -109,9 +109,16 @@ public final class FoliaBridge {
             case "servers.read": {
                 JSONObject servers = new JSONObject();
                 servers.put("netease", ServerSettings.netease(activity));
+                servers.put("neteaseToken", ServerSettings.neteaseToken(activity));
                 servers.put("kugou", ServerSettings.kugou(activity));
                 servers.put("qq", ServerSettings.qq(activity));
                 return servers;
+            }
+            case "servers.saveToken": {
+                // The gateway hands out one device token; it is stored natively so runtime-config.js
+                // carries it on the next launch without the page having to remember it.
+                ServerSettings.saveNeteaseToken(activity, params.optString("token", ""));
+                return new JSONObject().put("ok", true);
             }
             case "servers.save": {
                 // Runtime discovery writes back what it found, so the next boot points at the same

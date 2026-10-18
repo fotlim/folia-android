@@ -8,6 +8,7 @@ import { qqProvider } from './qq/qqProvider';
 import { bodianProvider } from './bodian/bodianProvider';
 import { ytmProvider } from './ytm/ytmProvider';
 import { spotifyProvider } from './spotify/spotifyProvider';
+import { isOnlineProviderEnabled } from './providerEnablement';
 
 // src/services/onlineMusic/providerRegistry.ts
 
@@ -44,10 +45,12 @@ export const subscribeOnlineMusicProviderRegistry = (listener: () => void): (() 
 };
 
 export const getOnlineMusicProvider = (providerId: OnlineProviderId): OnlineMusicProvider | null => (
-    providers.get(providerId) || null
+    isOnlineProviderEnabled(providerId) ? providers.get(providerId) || null : null
 );
 
-export const listOnlineMusicProviders = (): OnlineMusicProvider[] => Array.from(providers.values());
+export const listOnlineMusicProviders = (): OnlineMusicProvider[] => (
+    Array.from(providers.values()).filter(provider => isOnlineProviderEnabled(provider.id))
+);
 
 export const requireOnlineMusicProvider = (providerId: OnlineProviderId): OnlineMusicProvider => {
     const provider = getOnlineMusicProvider(providerId);

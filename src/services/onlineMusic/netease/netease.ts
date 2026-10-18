@@ -5,7 +5,7 @@ import type { PersonalFmRequestOptions, ProviderSongAvailability } from '../../.
 import { withLoginRequestLimit } from '../login/loginRequestLimit';
 import { withOnlineRequestLimit } from '../failure/onlineRequestLimit';
 import { errorFields } from '../../../utils/errorText';
-import { getRuntimeServerEndpoint } from '../../runtimeConfig';
+import { getRuntimeServerEndpoint, getRuntimeServerToken } from '../../runtimeConfig';
 
 type UnavailableSongReplacement = {
   replacementSong: SongResult;
@@ -191,10 +191,17 @@ const getApiBase = async () => {
 const fetchWithCreds = async (endpoint: string, options: RequestInit = {}, limit?: 'sign-in' | 'online') => {
   const base = await getApiBase();
   const url = `${base}${endpoint}`;
+  // 自建网关按设备令牌存放 Cookie 罐；没有令牌（网页/桌面/旧部署）时这条头不存在，行为不变。
+  const deviceToken = getRuntimeServerToken('netease');
+  const authHeaders: Record<string, string> = deviceToken ? { Authorization: `Bearer ${deviceToken}` } : {};
   // Ensure we send credentials to persist session (cookies)
   const defaultOptions: RequestInit = {
     ...options,
     mode: 'cors',
+    headers: {
+      ...(options.headers as Record<string, string> | undefined),
+      ...authHeaders,
+    },
   };
 
   // Selective Timestamp: Only for login, user, and playlist detail endpoints

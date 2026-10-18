@@ -31,6 +31,8 @@ declare global {
         netease?: string;
         kugou?: string;
         qq?: string;
+        /** 自建网关发的设备令牌：它让网关知道该用哪一个 Cookie 罐。 */
+        neteaseToken?: string;
       };
     };
   }

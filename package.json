@@ -17,7 +17,7 @@
   },
   "scripts": {
     "dev": "vite",
-    "build:android": "cross-env FOLIA_BUILD_TARGET=mobile vite build && node android/scripts/sync-web.mjs",
+    "build:android": "cross-env FOLIA_BUILD_TARGET=mobile VITE_ONLINE_PROVIDERS=netease vite build && node android/scripts/sync-web.mjs",
     "android:apk": "npm run build:android && cd android && gradlew.bat assembleRelease",
     "android:apk:debug": "npm run build:android && cd android && gradlew.bat assembleDebug",
     "test:android-smoke": "node test/manual/android-shell-smoke.mjs",
