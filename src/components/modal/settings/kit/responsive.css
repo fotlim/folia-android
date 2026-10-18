@@ -1,0 +1,62 @@
+/* src/components/modal/settings/kit/responsive.css
+ * 设置页在窄屏（手机竖屏、分屏窗口）上的排版。
+ *
+ * 原来的行是「标签在左、控件在右」，翻译一长控件就没地方放；宽度不够时控件虽然会折行，
+ * 但 label 的 flex 基数是 140px，剩余宽度时有时无，观感忽上忽下。窄屏改成上下两段：
+ * 标签和说明占满一行，控件单独一行、从左开始、能占多宽就占多宽——点按目标也随之变大。
+ */
+
+@media (max-width: 640px) {
+    [data-settings-row] {
+        flex-direction: column;
+        align-items: stretch;
+        row-gap: 8px;
+        min-height: 0;
+        padding-block: 10px;
+        padding-right: 14px;
+    }
+
+    [data-st-row-label] {
+        flex: 0 0 auto;
+        width: 100%;
+    }
+
+    [data-st-row-control] {
+        margin-left: 0;
+        width: 100%;
+        justify-content: flex-start;
+        gap: 8px;
+    }
+
+    /* 控件本身按可用宽度伸展，但不会被拉成一条线：滑块、输入框、下拉都落在这个范围里。 */
+    [data-st-row-control] > * {
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    /* 滑块：标签行 + 轨道各占一行，滑块拿走整行宽度。 */
+    [data-st-row-control] .st-slider-row {
+        width: 100%;
+    }
+
+    /* 分组标题与行内留白同步收紧，避免窄屏上外侧边距吃掉控件宽度。 */
+    .st-row,
+    [data-settings-row] {
+        border-radius: 0;
+    }
+}
+
+/* 分段选择（2–4 个短选项）：窄屏上让它均分整行，而不是挤在右侧一小块。 */
+@media (max-width: 640px) {
+    [data-st-row-control] [role='group'][aria-disabled] {
+        width: 100%;
+    }
+}
+
+/* 图片选择（信息条样式、墙面档位这类带预览的选项）：窄屏上换成三列、缩小预览，但保留可点面积。 */
+@media (max-width: 640px) {
+    [role='group'] > .group {
+        min-width: 84px;
+        max-width: 104px;
+    }
+}

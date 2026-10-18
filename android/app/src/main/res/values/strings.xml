@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Folia</string>
+    <string name="playback_channel_name">Playback</string>
+    <string name="playback_channel_description">Now playing controls</string>
+    <string name="action_previous">Previous</string>
+    <string name="action_play">Play</string>
+    <string name="action_pause">Pause</string>
+    <string name="action_next">Next</string>
+    <string name="unknown_track">Folia</string>
+    <string name="webview_outdated_title">WebView is too old</string>
+    <string name="webview_outdated_message">Folia needs Android System WebView 100 or newer. Please update it from Play Store, then reopen Folia.</string>
+    <string name="webview_outdated_update">Update</string>
+    <string name="webview_outdated_close">Close</string>
+</resources>

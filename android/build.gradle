@@ -1,0 +1,8 @@
+// android/build.gradle
+// Top-level build file: the Android Gradle Plugin version decides which compileSdk the shell can use.
+
+plugins {
+    id 'com.android.application' version '8.7.2' apply false
+}
+
+apply from: 'variables.gradle'

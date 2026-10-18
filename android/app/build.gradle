@@ -1,0 +1,86 @@
+import groovy.json.JsonSlurper
+
+// android/app/build.gradle
+// App module: a plain WebView shell plus its two native plugins. There is no Capacitor, so nothing
+// here depends on the JS toolchain — the web bundle is copied in by `npm run android:build`.
+
+plugins {
+    id 'com.android.application'
+}
+
+def packageJson = new JsonSlurper().parseText(file('../../package.json').text)
+def keystorePropertiesFile = rootProject.file('keystore.properties')
+def keystoreProperties = new Properties()
+def hasReleaseKeystore = keystorePropertiesFile.exists()
+
+if (hasReleaseKeystore) {
+    keystorePropertiesFile.withInputStream { keystoreProperties.load(it) }
+}
+
+android {
+    namespace = "top.izuna.foliamajor"
+    compileSdk rootProject.ext.compileSdkVersion
+
+    defaultConfig {
+        applicationId "top.izuna.foliamajor"
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode 1
+        versionName packageJson.version
+    }
+
+    signingConfigs {
+        if (hasReleaseKeystore) {
+            release {
+                // Relative to the android/ project, not to app/: the keystore lives next to
+                // keystore.properties.
+                storeFile rootProject.file(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword']
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+            }
+        }
+    }
+
+    buildTypes {
+        debug {
+            applicationIdSuffix ".debug"
+            versionNameSuffix "-debug"
+        }
+        release {
+            minifyEnabled false
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            if (hasReleaseKeystore) {
+                signingConfig signingConfigs.release
+            }
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    packagingOptions {
+        // The bundled web app ships licences of its own; do not let AGP fold them twice.
+        resources.excludes += ['META-INF/LICENSE*', 'META-INF/NOTICE*']
+    }
+}
+
+dependencies {
+    // androidx pulls kotlin-stdlib through its Java/Kotlin boundaries; some transitive dependency
+    // still asks for the old jdk7/jdk8 shims, whose classes moved into kotlin-stdlib itself. Aligning
+    // them on one version keeps the duplicate-class check quiet.
+    implementation platform('org.jetbrains.kotlin:kotlin-bom:1.8.22')
+
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.core:core:1.13.1'
+    implementation 'androidx.documentfile:documentfile:1.0.1'
+    implementation 'androidx.webkit:webkit:1.12.1'
+}
+
+configurations.configureEach {
+    exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk7'
+    exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk8'
+}

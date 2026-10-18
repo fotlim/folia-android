@@ -1,0 +1,67 @@
+/* src/services/mobileShell/mobileShell.css
+ * Layout adjustments that only apply inside the Android shell. Every rule is scoped to
+ * `html[data-folia-shell='android']`, which `installMobileShell()` sets, so the desktop app, the
+ * web build and the PWA keep their current layout byte for byte.
+ *
+ * The shell's WebView on a 1080x2400 phone (dpr 3) is 360x800 CSS pixels, and on a 20:9 phone held
+ * sideways 800x360. Those are the two shapes tuned here.
+ */
+
+html[data-folia-shell='android'] {
+    /* Taps should not paint a grey box over the glass UI. */
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Phone portrait (and any narrow window): the Bravais seam's tabs are 22px wide, a third of the
+ * touch minimum. The labels run vertically (`writing-mode: vertical-rl`), so the block axis is the
+ * horizontal one - `padding-block` is what widens them without making the column taller. */
+@media (max-width: 480px) {
+    html[data-folia-shell='android'] .bravais-seam-home .bravais-seam-tabs .bravais-seam-home-tab {
+        padding-block: 11px;
+    }
+
+    /* The floating capsule is 80% wide below `md`. At 360 CSS px that leaves a ~290px progress bar
+     * to both seek and read the time on - so on a phone it takes the width it can get. */
+    html[data-folia-shell='android'] [data-ponder='player-bar'] {
+        width: min(100%, 100%);
+    }
+}
+
+/* A 20:9 phone held sideways is only 360 CSS px tall. The seam gives its tab column whatever the
+ * tool column below it does not take, which there is 60px - one and a half tabs, and the rest of the
+ * navigation is clipped by the seam's own `overflow: hidden`. Giving the column a floor and letting
+ * the whole seam scroll keeps every level reachable; the list itself scrolls too. */
+@media (max-height: 420px) {
+    html[data-folia-shell='android'] .bravais-seam-home {
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        scrollbar-width: none;
+    }
+
+    html[data-folia-shell='android'] .bravais-seam-home::-webkit-scrollbar {
+        display: none;
+    }
+
+    html[data-folia-shell='android'] .bravais-seam-home-nav {
+        min-height: 200px;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        scrollbar-width: none;
+    }
+
+    html[data-folia-shell='android'] .bravais-seam-home-nav::-webkit-scrollbar {
+        display: none;
+    }
+
+    html[data-folia-shell='android'] .bravais-seam-home .bravais-seam-tabs {
+        gap: 0;
+    }
+}
+
+/* Portrait keyboard: the shell pads the WebView by the IME inset, so the page never sits under the
+ * keyboard. These rules keep focused inputs reachable inside their own scroll containers when the
+ * visible area is briefly short. */
+html[data-folia-shell='android'] input:focus,
+html[data-folia-shell='android'] textarea:focus {
+    scroll-margin-block: 96px;
+}

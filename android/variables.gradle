@@ -1,0 +1,10 @@
+// android/variables.gradle
+// Shared SDK versions for the Android shell. minSdk 29 is Android 10: every API the shell needs
+// (scoped storage through the Storage Access Framework, media-style notifications, foreground
+// service types) has a stable form from there on.
+
+ext {
+    minSdkVersion = 29
+    compileSdkVersion = 35
+    targetSdkVersion = 35
+}

@@ -1,0 +1,107 @@
+/* src/library/suites/bravais/bravaisSeamAnchor.css
+ * 「书库缝贴边」的四档位置。缝的盒子（位置 / 宽度 / 高度）由 BravaisStage 的 layout effect 写内联样式，
+ * 这里只负责两种排版的差别：
+ *   - left / right：仍是一条竖条，沿用原来的竖排内容；
+ *   - top / bottom：把整条缝改成一行——页签、工具都横过来排。
+ */
+
+/* 钉住时缝必须是可见的：世界那一层每帧写 visibility 的逻辑在 pinned 时已经跳过，
+   这里再兜一层，避免海报 / 交接状态留下的 hidden 把面板藏掉。 */
+[data-bravais-seam-anchor='left'] > .bravais-seam,
+[data-bravais-seam-anchor='right'] > .bravais-seam,
+[data-bravais-seam-anchor='top'] > .bravais-seam,
+[data-bravais-seam-anchor='bottom'] > .bravais-seam {
+    visibility: visible;
+    z-index: 6;
+}
+
+/* 贴边的竖条与上下的横条都不该保留“属于墙面”的倾斜与阴影方向。 */
+[data-bravais-seam-anchor='left'] > .bravais-seam,
+[data-bravais-seam-anchor='right'] > .bravais-seam {
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--text-primary, #fff) 7%, transparent), 0 18px 48px rgb(0 0 0 / 38%);
+}
+
+/* 竖条上内容按整条宽度排：缝自己已经给足了宽度，不再沿用“书脊”那套窄排版。 */
+[data-bravais-seam-anchor='left'] > .bravais-seam .bravais-seam-content,
+[data-bravais-seam-anchor='right'] > .bravais-seam .bravais-seam-content {
+    width: 100% !important;
+    margin-left: -50% !important;
+}
+
+/* ── 上 / 下：横向一条 ─────────────────────────────────────────────── */
+
+[data-bravais-seam-anchor='top'] > .bravais-seam,
+[data-bravais-seam-anchor='bottom'] > .bravais-seam {
+    box-shadow: 0 10px 32px rgb(0 0 0 / 34%);
+}
+
+[data-bravais-seam-anchor='top'] > .bravais-seam .bravais-seam-content,
+[data-bravais-seam-anchor='bottom'] > .bravais-seam .bravais-seam-content {
+    left: 0;
+    width: 100% !important;
+    margin-left: 0 !important;
+    transform: none !important;
+}
+
+[data-bravais-seam-anchor='top'] > .bravais-seam .bravais-seam-body,
+[data-bravais-seam-anchor='bottom'] > .bravais-seam .bravais-seam-body {
+    height: 100%;
+    padding-bottom: 0 !important;
+}
+
+/* 首页的缝：竖排时是「页头 / 中段 / 工具」三段，横排时并成一行。 */
+[data-bravais-seam-anchor='top'] > .bravais-seam .bravais-seam-home,
+[data-bravais-seam-anchor='bottom'] > .bravais-seam .bravais-seam-home,
+[data-bravais-seam-anchor='top'] > .bravais-seam .bravais-seam-home-nav,
+[data-bravais-seam-anchor='bottom'] > .bravais-seam .bravais-seam-home-nav,
+[data-bravais-seam-anchor='top'] > .bravais-seam .bravais-seam-home-nav-content,
+[data-bravais-seam-anchor='bottom'] > .bravais-seam .bravais-seam-home-nav-content,
+[data-bravais-seam-anchor='top'] > .bravais-seam .bravais-seam-home-middle,
+[data-bravais-seam-anchor='bottom'] > .bravais-seam .bravais-seam-home-middle,
+[data-bravais-seam-anchor='top'] > .bravais-seam .bravais-seam-home-body,
+[data-bravais-seam-anchor='bottom'] > .bravais-seam .bravais-seam-home-body {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    min-height: 0;
+    height: 100%;
+    gap: 12px;
+}
+
+[data-bravais-seam-anchor='top'] > .bravais-seam .bravais-seam-home-nav,
+[data-bravais-seam-anchor='bottom'] > .bravais-seam .bravais-seam-home-nav {
+    padding: 0 14px;
+    overflow: visible;
+}
+
+/* 页签：竖排文字转为横排，并保持可点按的高度。 */
+[data-bravais-seam-anchor='top'] > .bravais-seam .bravais-seam-home .bravais-seam-tabs,
+[data-bravais-seam-anchor='bottom'] > .bravais-seam .bravais-seam-home .bravais-seam-tabs {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 4px;
+}
+
+[data-bravais-seam-anchor='top'] > .bravais-seam .bravais-seam-home .bravais-seam-home-tab,
+[data-bravais-seam-anchor='bottom'] > .bravais-seam .bravais-seam-home .bravais-seam-home-tab {
+    writing-mode: horizontal-tb;
+    text-orientation: mixed;
+    padding: 7px 11px;
+    min-height: 36px;
+}
+
+/* 竖排时页头是「书库」两个字压在上面；横排时它只是行首的一个标签，收小即可。 */
+[data-bravais-seam-anchor='top'] > .bravais-seam .bravais-seam-home-head,
+[data-bravais-seam-anchor='bottom'] > .bravais-seam .bravais-seam-home-head {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+}
+
+[data-bravais-seam-anchor='top'] > .bravais-seam .bravais-seam-home-title,
+[data-bravais-seam-anchor='bottom'] > .bravais-seam .bravais-seam-home-title {
+    writing-mode: horizontal-tb;
+    white-space: nowrap;
+}
