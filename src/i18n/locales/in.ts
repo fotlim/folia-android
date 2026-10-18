@@ -1980,6 +1980,8 @@ export default {
     "neteaseAccount": "Masuk akun NetEase",
     "neteaseAccountDesc": "Nomor telepon dan kata sandi, saat memindai di aplikasi tidak praktis. Proses masuk dilakukan backend.",
     "neteaseAccountNeedsBackend": "Isi dulu alamat endpoint musik online: proses masuk dilakukan backend.",
+    "neteaseAccountCode": "Kode",
+    "neteaseAccountSendCode": "Kirim kode",
     "neteaseAccountPhone": "Nomor telepon",
     "neteaseAccountPassword": "Kata sandi",
     "neteaseAccountSignIn": "Masuk",

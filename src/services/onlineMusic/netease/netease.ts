@@ -6,7 +6,7 @@ import { withLoginRequestLimit } from '../login/loginRequestLimit';
 import { withOnlineRequestLimit } from '../failure/onlineRequestLimit';
 import { errorFields } from '../../../utils/errorText';
 import { getRuntimeServerEndpoint } from '../../runtimeConfig';
-import { canServeNeteaseDirectly, requestNeteaseDirectly } from '../../mobileShell/directNetease';
+import { canServeNeteaseDirectly, requestNeteaseDirectly, tryDirectSignIn } from '../../mobileShell/directNetease';
 
 type UnavailableSongReplacement = {
   replacementSong: SongResult;
@@ -191,14 +191,22 @@ const getApiBase = async () => {
 // an answer. 'online': a song's address or a collection's tracks, with the limit of online requests.
 const fetchWithCreds = async (endpoint: string, options: RequestInit = {}, limit?: 'sign-in' | 'online') => {
   // Android 上没有部署后端时先走原生直连：网易云的公开接口匿名可用，搜索、歌词、歌单、
-  // 非 VIP 的播放地址都能拿到；登录之类要靠网关，会落回下面的「未配置」错误。
-  if (!getConfiguredApiBase() && canServeNeteaseDirectly(endpoint)) {
-    console.info('[NetEase] direct request', endpoint);
-    const payload = await requestNeteaseDirectly(endpoint);
-    return new Response(JSON.stringify(payload), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    });
+  // 非 VIP 的播放地址都能拿到；登录走 weapi（同样在原生通道里），密码/验证码都行。
+  if (!getConfiguredApiBase()) {
+    const signedIn = await tryDirectSignIn(endpoint);
+    if (signedIn) {
+      return new Response(JSON.stringify(signedIn), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+    if (canServeNeteaseDirectly(endpoint)) {
+      const payload = await requestNeteaseDirectly(endpoint);
+      return new Response(JSON.stringify(payload), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
   }
 
   const base = await getApiBase();
@@ -761,6 +769,20 @@ export const neteaseApi = {
   loginCellphone: async (phone: string, password: string, countrycode?: string) => {
     const query = new URLSearchParams({ phone, password });
     if (countrycode) query.set('countrycode', countrycode);
+    return fetchWithCreds(`/login/cellphone?${query.toString()}`, {}, 'sign-in');
+  },
+
+  /**
+   * 短信验证码登录。网易云对账号密码登录加了风控，很多账号直接回 400；验证码这条路是官方客户端也在用的，
+   * 先 `/captcha/sent` 发码，再带 `captcha` 登录。
+   */
+  sendCaptcha: async (phone: string, countrycode = '86') => {
+    const query = new URLSearchParams({ phone, ctcode: countrycode });
+    return fetchWithCreds(`/captcha/sent?${query.toString()}`, {}, 'sign-in');
+  },
+
+  loginCellphoneCaptcha: async (phone: string, captcha: string, countrycode = '86') => {
+    const query = new URLSearchParams({ phone, captcha, countrycode });
     return fetchWithCreds(`/login/cellphone?${query.toString()}`, {}, 'sign-in');
   },
 

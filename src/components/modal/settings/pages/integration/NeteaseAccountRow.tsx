@@ -17,23 +17,51 @@ const NeteaseAccountRow: React.FC = () => {
     const { t } = useTranslation();
     const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
+    const [captcha, setCaptcha] = useState('');
+    const [captchaSent, setCaptchaSent] = useState(false);
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [done, setDone] = useState(false);
 
-    // 桌面端自带本地后端；手机上要有接口地址才登得进去。没有时这一行仍然显示，只是把按钮禁掉并说明原因。
-    const hasBackend = Boolean(getRuntimeServerEndpoint('netease')) || !isAndroidShell();
+    // 桌面端自带本地后端，手机端没有后端时走原生直连 + weapi 加密，所以两种环境都能登录；
+    // 这一行保留成常量是为了让「没有后端」的分支以后接回来时不用再改结构。
+    const hasBackend = true;
+
+    const codeLooksValid = (value: string): boolean => /^\d{4,6}$/.test(value.trim());
+
+    const sendCode = async () => {
+        if (!hasBackend || !phoneLooksValid(phone)) {
+            setError(t('options.neteaseAccountInvalid'));
+            return;
+        }
+        setError(null);
+        try {
+            const result = await neteaseApi.sendCaptcha(phone.trim());
+            const code = (result as { code?: number } | null)?.code;
+            if (typeof code === 'number' && code !== 200) {
+                setError((result as { message?: string; msg?: string }).message
+                    ?? (result as { msg?: string }).msg ?? `code ${code}`);
+                return;
+            }
+            setCaptchaSent(true);
+        } catch (failure) {
+            setError(failure instanceof Error ? failure.message : String(failure));
+        }
+    };
 
     const submit = async () => {
         if (!hasBackend) return;
-        if (!phoneLooksValid(phone) || password.length < 4) {
+        const byCode = captchaSent;
+        if (!phoneLooksValid(phone) || (byCode ? !codeLooksValid(captcha) : password.length < 4)) {
             setError(t('options.neteaseAccountInvalid'));
             return;
         }
         setBusy(true);
         setError(null);
         try {
-            const result = await neteaseApi.loginCellphone(phone.trim(), password);
+            const result = byCode
+                ? await neteaseApi.loginCellphoneCaptcha(phone.trim(), captcha.trim())
+                : await neteaseApi.loginCellphone(phone.trim(), password);
             const code = (result as { code?: number } | null)?.code;
             if (typeof code === 'number' && code !== 200) {
                 const message = (result as { message?: string; msg?: string }).message
@@ -56,6 +84,9 @@ const NeteaseAccountRow: React.FC = () => {
         <>
             <Row option={O.neteaseAccount} hint={t(hasBackend ? 'options.neteaseAccountDesc' : 'options.neteaseAccountNeedsBackend')}>
                 {done ? <Status tone="ok">{t('options.neteaseAccountDone')}</Status> : null}
+                <Button onClick={() => void sendCode()} disabled={busy || !hasBackend}>
+                    {t('options.neteaseAccountSendCode')}
+                </Button>
                 <Button onClick={() => void submit()} disabled={busy || !hasBackend}>
                     {busy ? t('options.neteaseAccountBusy') : t('options.neteaseAccountSignIn')}
                 </Button>
@@ -79,6 +110,15 @@ const NeteaseAccountRow: React.FC = () => {
                         placeholder={t('options.neteaseAccountPassword')}
                         aria-label={t('options.neteaseAccountPassword')}
                         className="st-card min-w-0 flex-[1_1_140px] bg-[var(--st-fill)] px-3 py-2 text-sm text-[color:var(--st-t1)] outline-none placeholder:text-[color:var(--st-t3)] focus:shadow-[inset_0_0_0_1px_var(--st-accent)]"
+                    />
+                    <input
+                        value={captcha}
+                        onChange={event => setCaptcha(event.target.value)}
+                        inputMode="numeric"
+                        autoComplete="one-time-code"
+                        placeholder={t('options.neteaseAccountCode')}
+                        aria-label={t('options.neteaseAccountCode')}
+                        className="st-card min-w-0 flex-[0_1_120px] bg-[var(--st-fill)] px-3 py-2 text-sm text-[color:var(--st-t1)] outline-none placeholder:text-[color:var(--st-t3)] focus:shadow-[inset_0_0_0_1px_var(--st-accent)]"
                     />
                 </div>
             </Row>

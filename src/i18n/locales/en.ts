@@ -2269,6 +2269,8 @@ export default {
     "neteaseAccount": "NetEase account sign-in",
     "neteaseAccountDesc": "Phone number and password, for when scanning in the app is not handy. The backend does the signing in.",
     "neteaseAccountNeedsBackend": "Set the online music endpoint first: the backend does the sign-in.",
+    "neteaseAccountCode": "Code",
+    "neteaseAccountSendCode": "Send code",
     "neteaseAccountPhone": "Phone number",
     "neteaseAccountPassword": "Password",
     "neteaseAccountSignIn": "Sign in",

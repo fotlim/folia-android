@@ -2269,6 +2269,8 @@ export default {
     "neteaseAccount": "网易云账号密码登录",
     "neteaseAccountDesc": "手机号 + 密码登录；登录由后端完成，扫码不方便时用它。",
     "neteaseAccountNeedsBackend": "先填好在线音乐接口地址：登录由后端完成。",
+    "neteaseAccountCode": "验证码",
+    "neteaseAccountSendCode": "发送验证码",
     "neteaseAccountPhone": "手机号",
     "neteaseAccountPassword": "密码",
     "neteaseAccountSignIn": "登录",
