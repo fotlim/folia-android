@@ -71,6 +71,11 @@ export const installMobileShell = (): void => {
 
     document.documentElement.dataset.foliaShell = 'android';
 
+    // 触屏上那颗灯泡（Ponder 按钮）和面板里的入口重复，手机壳内不再显示。
+    void import('../../stores/usePonderStore')
+        .then(module => module.usePonderStore.getState().setShowPonderTouchButton(false))
+        .catch(error => console.warn('[MobileShell] Could not hide the Ponder touch button', error));
+
     onNativeEvent('back', () => {
         const globalWindow = window as unknown as { __foliaNativeBackPressed?: () => boolean };
         globalWindow.__foliaNativeBackPressed?.();

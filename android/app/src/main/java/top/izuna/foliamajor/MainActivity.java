@@ -114,6 +114,10 @@ public class MainActivity extends AppCompatActivity implements PlaybackService.T
                 .addPathHandler("/saf/", new SafStreamHandler(this, bridge.files()))
                 .build();
 
+        // 本地资源只在安装时变，WebView 的缓存却可能继续用旧包；每次启动清一次。
+
+        webView.clearCache(true);
+
         webView.loadUrl(START_URL);
         warnIfWebViewIsTooOld();
     }

@@ -76,7 +76,7 @@ final class WebAssetHandler implements WebViewAssetLoader.PathHandler {
         }
 
         Map<String, String> headers = new HashMap<>();
-        headers.put("Cache-Control", "no-cache");
+        headers.put("Cache-Control", "no-cache, no-store, must-revalidate");
 
         // The runtime configuration is generated per request from the device's own settings, so a
         // server address changed in the shell reaches the app on the next reload.

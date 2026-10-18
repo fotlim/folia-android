@@ -37,8 +37,10 @@ html[data-folia-shell='android'] {
 }
 
 /* 播放页不要再放墙面工具：设置已经并进播放条，两套控件在手机上会叠在一起。
- * 墙的 chrome 常驻在资料库那一层，视图标记由 AppOverlays 写到 <html data-folia-view>。 */
-html[data-folia-view='player'] .lattice-tools {
+ * 墙的 chrome 常驻在资料库那一层，视图标记由 AppOverlays 写到 <html data-folia-view>。
+ * 手机壳内整块墙面工具（右下角那颗圆钮）都不显示：书库面板里已经有搜索、设置与「更多」，
+ * 两颗设置入口叠在一起只会挡住内容。 */
+html[data-folia-shell='android'] .lattice-tools {
     display: none;
 }
 

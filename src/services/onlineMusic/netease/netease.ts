@@ -193,6 +193,7 @@ const fetchWithCreds = async (endpoint: string, options: RequestInit = {}, limit
   // Android 上没有部署后端时先走原生直连：网易云的公开接口匿名可用，搜索、歌词、歌单、
   // 非 VIP 的播放地址都能拿到；登录之类要靠网关，会落回下面的「未配置」错误。
   if (!getConfiguredApiBase() && canServeNeteaseDirectly(endpoint)) {
+    console.info('[NetEase] direct request', endpoint);
     const payload = await requestNeteaseDirectly(endpoint);
     return new Response(JSON.stringify(payload), {
       status: 200,

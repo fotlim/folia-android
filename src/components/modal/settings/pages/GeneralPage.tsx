@@ -159,9 +159,6 @@ const GeneralPage: React.FC = () => {
                         onChange={ponder.setPonderHintVisibility}
                     />
                 </Row>
-                <Row option={O.ponderTouchButton} hint={t('options.ponderTouchButtonDesc')}>
-                    <Toggle checked={ponder.showPonderTouchButton} onChange={ponder.setShowPonderTouchButton} />
-                </Row>
             </Group>
         </>
     );

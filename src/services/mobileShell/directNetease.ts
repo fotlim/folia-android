@@ -57,10 +57,16 @@ export const isDirectNeteaseAvailable = (): boolean => isAndroidShell();
 
 /** 会不会是「直连能处理」的路径；用来决定要不要走原生而不报错。 */
 export const canServeNeteaseDirectly = (endpoint: string): boolean => {
-    if (!isDirectNeteaseAvailable()) return false;
+    const shell = isDirectNeteaseAvailable();
+    if (!shell) {
+        console.info('[NetEase] direct unavailable (not the Android shell)', endpoint);
+        return false;
+    }
     try {
         const parsed = new URL(`http://local${endpoint}`);
-        return mapEndpoint(parsed.pathname, parsed.searchParams) !== null;
+        const mapped = mapEndpoint(parsed.pathname, parsed.searchParams);
+        console.info('[NetEase] direct mapping', parsed.pathname, mapped);
+        return mapped !== null;
     } catch {
         return false;
     }
