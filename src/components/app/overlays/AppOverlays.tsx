@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import FloatingPlayerControls from '../../FloatingPlayerControls';
 import SearchWorkspace from '../search/SearchWorkspace';
 import DevDebugOverlay from '../../DevDebugOverlay';
@@ -14,6 +14,12 @@ type AppOverlaysProps = {
 
 const AppOverlays: React.FC<AppOverlaysProps> = ({ model }) => {
     countRender('AppOverlays');
+    // 当前视图写进 <html>，手机壳的样式据此隐藏只属于资料库的常驻控件（播放页不显示墙面工具）。
+    const currentView = model.floatingControls?.currentView ?? 'home';
+    useEffect(() => {
+        if (typeof document === 'undefined') return;
+        document.documentElement.dataset.foliaView = currentView;
+    }, [currentView]);
     const {
         searchOverlay,
         debugOverlay,

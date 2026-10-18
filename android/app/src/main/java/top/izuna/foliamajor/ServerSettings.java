@@ -21,7 +21,6 @@ final class ServerSettings {
 
     private static final String PREFS = "folia_servers";
     private static final String KEY_NETEASE = "netease";
-    private static final String KEY_NETEASE_TOKEN = "netease_token";
     private static final String KEY_KUGOU = "kugou";
     private static final String KEY_QQ = "qq";
     private static final String KEY_NOTIFICATIONS_ASKED = "notifications_asked";
@@ -35,17 +34,6 @@ final class ServerSettings {
 
     static String netease(Context context) {
         return prefs(context).getString(KEY_NETEASE, "");
-    }
-
-    /** 自建网关给的设备令牌：网关按它保存这台设备的 Cookie。 */
-    static String neteaseToken(Context context) {
-        return prefs(context).getString(KEY_NETEASE_TOKEN, "");
-    }
-
-    static void saveNeteaseToken(Context context, String token) {
-        prefs(context).edit()
-                .putString(KEY_NETEASE_TOKEN, token == null ? "" : token.trim())
-                .apply();
     }
 
     static String kugou(Context context) {
@@ -90,7 +78,6 @@ final class ServerSettings {
     static String buildRuntimeConfigJs(Context context) {
         JSONObject servers = new JSONObject();
         putIfNotEmpty(servers, "netease", netease(context));
-        putIfNotEmpty(servers, "neteaseToken", neteaseToken(context));
         putIfNotEmpty(servers, "kugou", kugou(context));
         putIfNotEmpty(servers, "qq", qq(context));
 

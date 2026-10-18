@@ -4,12 +4,20 @@
   "type": "module",
   "description": "网易云专用网关：给 Folia 的 Android 客户端提供已配置好的在线音乐后端",
   "scripts": {
-    "start": "node server.mjs"
+    "start": "node server.mjs",
+    "start:file": "cross-env COOKIE_STORE=file node server.mjs",
+    "start:redis": "cross-env COOKIE_STORE=redis node server.mjs"
   },
   "engines": {
     "node": ">=20"
   },
   "dependencies": {
-    "@neteasecloudmusicapienhanced/api": "^4.36.2"
+    "@neteasecloudmusicapienhanced/api": "4.41.1"
+  },
+  "optionalDependencies": {
+    "redis": "^4.7.0"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3"
   }
 }

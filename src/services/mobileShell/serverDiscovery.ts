@@ -10,7 +10,6 @@
 
 import { callNative, isAndroidShell } from './nativeBridge';
 import type { RuntimeServerProvider } from '../runtimeConfig';
-import { getRuntimeServerToken } from '../runtimeConfig';
 
 export interface DiscoveredServers {
     netease: string;
@@ -193,7 +192,6 @@ export const discoverServers = async (options: { force?: boolean } = {}): Promis
             state = { status: 'done', servers: stored, hosts: [] };
             applyServers(stored);
             emit();
-            void ensureDeviceToken(stored.netease);
             return stored;
         }
     }
@@ -215,7 +213,6 @@ export const discoverServers = async (options: { force?: boolean } = {}): Promis
     };
     if (Object.values(servers).some(Boolean)) {
         applyServers(servers);
-        void ensureDeviceToken(servers.netease);
     }
     emit();
 
@@ -225,49 +222,6 @@ export const discoverServers = async (options: { force?: boolean } = {}): Promis
         console.info('[MobileShell] No music backend answered on this network; local music still works');
     }
     return servers;
-};
-
-/**
- * The gateway keeps one Cookie jar per device. Registering is anonymous and happens on its own, so
- * the user never sees a server-configuration step: scanning the QR in the app is the only thing they
- * do. A plain NeteaseCloudMusicApi instance has no /auth/register and simply answers 404 - then we
- * leave the token empty and the request goes out without an Authorization header, as before.
- */
-const ensureDeviceToken = async (neteaseBase: string): Promise<void> => {
-    if (!neteaseBase) return;
-    if (typeof window === 'undefined') return;
-    if (getRuntimeServerToken('netease')) return;
-
-    try {
-        const response = await fetch(`${neteaseBase}/auth/register`, {
-            method: 'POST',
-            mode: 'cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: '{}',
-        });
-        if (!response.ok) return;
-        const payload = await response.json() as { token?: string };
-        const token = typeof payload.token === 'string' ? payload.token.trim() : '';
-        if (!token) return;
-
-        const config = window.__FOLIA_RUNTIME_CONFIG__ ?? (window.__FOLIA_RUNTIME_CONFIG__ = {});
-        config.servers = { ...(config.servers ?? {}), neteaseToken: token };
-        try {
-            localStorage.setItem('folia_mobile_netease_token', token);
-        } catch {
-            // Storage may be full; the native copy below is the durable one.
-        }
-        if (isAndroidShell()) {
-            await callNative('servers.saveToken', { token }, 10_000).catch(() => undefined);
-        }
-        // The NetEase module resolves its base (and headers) once; make the next call see the token.
-        void import('../onlineMusic/netease/netease')
-            .then(module => module.resetNeteaseApiBaseCache())
-            .catch(() => undefined);
-        console.info('[MobileShell] Registered a device token with the music gateway');
-    } catch (error) {
-        console.warn('[MobileShell] Music gateway did not hand out a device token', error);
-    }
 };
 
 /** Re-probes once the phone is back on a network, if discovery never found anything. */

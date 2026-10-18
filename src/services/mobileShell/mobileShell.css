@@ -36,6 +36,12 @@ html[data-folia-shell='android'] {
     }
 }
 
+/* 播放页不要再放墙面工具：设置已经并进播放条，两套控件在手机上会叠在一起。
+ * 墙的 chrome 常驻在资料库那一层，视图标记由 AppOverlays 写到 <html data-folia-view>。 */
+html[data-folia-view='player'] .lattice-tools {
+    display: none;
+}
+
 /* A 20:9 phone held sideways is only 360 CSS px tall. The seam gives its tab column whatever the
  * tool column below it does not take, which there is 60px - one and a half tabs, and the rest of the
  * navigation is clipped by the seam's own `overflow: hidden`. Giving the column a floor and letting
