@@ -37,6 +37,6 @@ export const isHorizontalSeamAnchor = (anchor: LibraryWallSeamAnchor): boolean =
     anchor === 'top' || anchor === 'bottom'
 );
 
-/** Height of the horizontal bar, and the vertical strip's preferred width. */
+/** Height of the horizontal bar, and the vertical strip's width (the bottom tool column's). */
 export const PINNED_SEAM_BAR_PX = 72;
-export const PINNED_SEAM_STRIP_PX = 420;
+export const PINNED_SEAM_STRIP_PX = 152;

@@ -3411,6 +3411,7 @@ export default {
   "player": {
     "play": "Putar",
     "pause": "Jeda",
+    "collapse": "Ciutkan",
     "like": "Suka",
     "unlike": "Batal Suka",
     "loopOff": "Ulangi Mati",

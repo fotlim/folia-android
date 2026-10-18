@@ -3419,6 +3419,7 @@ export default {
   "player": {
     "play": "Play",
     "pause": "Pause",
+    "collapse": "Collapse",
     "like": "Like",
     "unlike": "Unlike",
     "loopOff": "Loop off",

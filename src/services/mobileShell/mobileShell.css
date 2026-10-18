@@ -22,8 +22,10 @@ html[data-folia-shell='android'] {
 
     /* The floating capsule is 80% wide below `md`. At 360 CSS px that leaves a ~290px progress bar
      * to both seek and read the time on - so on a phone it takes the width it can get. */
+    /* The resting state is a cover-only mini pill: it must shrink to its content, not fill the row.
+     * The expanded state keeps the full width it asks for itself. */
     html[data-folia-shell='android'] [data-ponder='player-bar'] {
-        width: min(100%, 100%);
+        width: auto;
     }
 
     /* The expanded bar sits over the wall, and its glass is translucent enough that the track card

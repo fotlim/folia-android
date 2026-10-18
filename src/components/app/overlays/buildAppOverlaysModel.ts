@@ -255,6 +255,7 @@ export const buildAppOverlaysModel = ({
     floatingControls: currentSong
         ? {
             currentSong,
+            coverUrl: coverUrl || null,
             playerState,
             currentTime,
             lyricCurrentTime,

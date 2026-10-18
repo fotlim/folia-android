@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Play, Pause } from 'lucide-react';
+import { ChevronDown, Music, Pause, Play } from 'lucide-react';
 import { MotionValue } from 'framer-motion';
 import ProgressBar from './ProgressBar';
 import { PlayerState, LyricData, Theme } from '../types';
@@ -57,6 +57,8 @@ export type SlotContextFromApp = Omit<
 
 interface FloatingPlayerControlsProps {
     currentSong: { name: string; } | null;
+    /** 封面地址：常态的迷你播放条只显示它。 */
+    coverUrl?: string | null;
     playerState: PlayerState;
     currentTime: MotionValue<number>;
     lyricCurrentTime?: MotionValue<number>;
@@ -92,6 +94,7 @@ interface FloatingPlayerControlsProps {
 
 const FloatingPlayerControls: React.FC<FloatingPlayerControlsProps> = ({
     currentSong,
+    coverUrl = null,
     playerState,
     currentTime,
     lyricCurrentTime,
@@ -125,6 +128,8 @@ const FloatingPlayerControls: React.FC<FloatingPlayerControlsProps> = ({
     // const isDaylight = theme?.name === 'Daylight Default'; // Deprecated, passed as prop
     const glassBgExpanded = isDaylight ? 'bg-white/60 border border-white/20 shadow-xl' : 'bg-black/40 border border-white/5';
     const glassBgCollapsed = isDaylight ? 'bg-white/40 border border-white/20 shadow-lg hover:bg-white/50' : 'bg-black/20 border border-white/5 hover:bg-black/30';
+    // 迷你条与展开态用的是同一个封面；没有封面时退化成音符图标。
+    const resolvedCoverUrl = coverUrl;
     const trackColor = isDaylight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.1)';
     // Button bg logic
     const buttonBg = isDaylight ? { backgroundColor: primaryColor, color: 'var(--bg-color)' } : { backgroundColor: primaryColor, color: 'var(--bg-color)' }; // Keep primary for play button, looks good
@@ -151,8 +156,14 @@ const FloatingPlayerControls: React.FC<FloatingPlayerControlsProps> = ({
     ));
 
     const canAutoExpand = canTogglePlay && duration > 0;
-    // 定位模式强制展开：用户要看到的是最终形态的胶囊，而不是一条细进度条。
-    const showExpanded = isPositioning || isHovered || (canAutoExpand && playerState !== PlayerState.PLAYING && currentView !== 'home');
+    // 手机上播放条默认只是一枚封面迷你条：鼠标悬停不再自动展开，只有点按才展开信息。
+    // 桌面版保留原来的自动展开（暂停时展开），因为那里没有「点一下展开」的触摸习惯。
+    const isTouchShell = typeof document !== 'undefined'
+        && document.documentElement.dataset.foliaShell === 'android';
+    const [miniExpanded, setMiniExpanded] = useState(false);
+    const showExpanded = isPositioning
+        || miniExpanded
+        || (!isTouchShell && (isHovered || (canAutoExpand && playerState !== PlayerState.PLAYING && currentView !== 'home')));
 
     // 上限依赖视口高度，窗口变矮时要跟着收，否则虚线框会画到屏幕外。
     useEffect(() => {
@@ -379,10 +390,22 @@ const FloatingPlayerControls: React.FC<FloatingPlayerControlsProps> = ({
                         onPointerCancel={handlePositionDragEnd}
                         style={{ touchAction: isPositioning ? 'none' : undefined }}
                         className={`backdrop-blur-xl shadow-2xl overflow-hidden relative transition-colors duration-300
-                            ${showExpanded ? 'rounded-3xl' : 'rounded-full'}
+                            ${showExpanded ? 'rounded-3xl' : 'rounded-2xl'}
                             ${isPositioning ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'}
-                            ${showExpanded ? `px-4 py-4 ${glassBgExpanded} w-full` : `px-4 py-2 ${glassBgCollapsed} ${COLLAPSED_WIDTH_CLASS}`}`}
+                            ${showExpanded ? `px-4 py-4 ${glassBgExpanded} w-full` : `p-1.5 ${glassBgCollapsed} w-auto`}`}
                     >
+                        {/* 展开后收起：触摸设备上没有「移开鼠标」，需要一个明确的返回迷你条入口。 */}
+                        {showExpanded && !isPositioning && (
+                            <button
+                                type="button"
+                                aria-label={t('player.collapse')}
+                                title={t('player.collapse')}
+                                onClick={() => setMiniExpanded(false)}
+                                className="absolute right-1.5 top-1.5 z-10 grid h-7 w-7 place-items-center rounded-full bg-white/10 text-white/70 transition-colors hover:bg-white/20"
+                            >
+                                <ChevronDown size={16} aria-hidden />
+                            </button>
+                        )}
                         <motion.div
                             layout
                             transition={{ layout: CONTROL_LAYOUT_SPRING }}
@@ -411,14 +434,14 @@ const FloatingPlayerControls: React.FC<FloatingPlayerControlsProps> = ({
                                     slotContext={resolvedSlotContext}
                                 />
                             ) : (
-                                <CollapsedView
-                                    currentTime={currentTime}
-                                    duration={duration}
-                                    onSeek={onSeek}
-                                    primaryColor={primaryColor}
-                                    secondaryColor={secondaryColor}
-                                    trackColor={trackColor}
-                                    controlsDisabled={controlsDisabled}
+                                <MiniView
+                                    coverUrl={resolvedCoverUrl}
+                                    title={currentSong?.name || noTrackText}
+                                    canPrev={Boolean(trackNavigation?.canPrev)}
+                                    canNext={Boolean(trackNavigation?.canNext)}
+                                    onExpand={() => setMiniExpanded(true)}
+                                    onPrev={trackNavigation?.onPrev}
+                                    onNext={trackNavigation?.onNext}
                                 />
                             )}
                         </motion.div>
@@ -464,6 +487,8 @@ const FloatingPlayerControls: React.FC<FloatingPlayerControlsProps> = ({
 // 展开视图组件
 interface ExpandedViewProps {
     currentSong: { name: string; } | null;
+    /** 封面地址：常态的迷你播放条只显示它。 */
+    coverUrl?: string | null;
     playerState: PlayerState;
     currentTime: MotionValue<number>;
     lyricCurrentTime?: MotionValue<number>;
@@ -589,38 +614,81 @@ const ExpandedView: React.FC<ExpandedViewProps> = ({
     );
 };
 
-// 折叠视图组件
-interface CollapsedViewProps {
-    currentTime: MotionValue<number>;
-    duration: number;
-    onSeek: (time: number) => void;
-    primaryColor: string;
-    secondaryColor: string;
-    trackColor?: string;
-    controlsDisabled?: boolean;
+// 折叠视图：播放条常态。手机上一枚只显示封面的迷你圆角矩形——左右滑动切歌，点一下展开信息。
+interface MiniViewProps {
+    coverUrl: string | null;
+    title: string;
+    canPrev: boolean;
+    canNext: boolean;
+    onExpand: () => void;
+    onPrev?: () => void;
+    onNext?: () => void;
 }
 
-const CollapsedView: React.FC<CollapsedViewProps> = ({
-    currentTime,
-    duration,
-    onSeek,
-    primaryColor,
-    secondaryColor,
-    trackColor,
-    controlsDisabled = false,
+const MINI_SWIPE_PX = 36;
+
+const MiniView: React.FC<MiniViewProps> = ({
+    coverUrl,
+    title,
+    canPrev,
+    canNext,
+    onExpand,
+    onPrev,
+    onNext,
 }) => {
+    const startXRef = useRef<number | null>(null);
+    const swipedRef = useRef(false);
+    // 本地歌常常没有封面；链接坏了也退回音符图标，而不是浏览器的破图图标。
+    const [coverFailed, setCoverFailed] = useState(false);
+
     return (
-        <div className="flex items-center w-full justify-center h-8 px-4">
-            <ProgressBar
-                currentTime={currentTime}
-                duration={duration}
-                onSeek={onSeek}
-                primaryColor={primaryColor}
-                secondaryColor={secondaryColor}
-                trackColor={trackColor}
-                disabled={controlsDisabled}
-                collapsed
-            />
+        <div
+            role="button"
+            tabIndex={0}
+            aria-label={title}
+            className="relative flex touch-pan-y select-none items-center justify-center"
+            onPointerDown={event => {
+                startXRef.current = event.clientX;
+                swipedRef.current = false;
+            }}
+            onPointerMove={event => {
+                if (startXRef.current === null || swipedRef.current) return;
+                const dx = event.clientX - startXRef.current;
+                if (Math.abs(dx) < MINI_SWIPE_PX) return;
+                const goNext = dx < 0;
+                if (goNext ? !canNext : !canPrev) return;
+                swipedRef.current = true;
+                if (goNext) onNext?.();
+                else onPrev?.();
+            }}
+            onPointerUp={event => {
+                const start = startXRef.current;
+                startXRef.current = null;
+                if (swipedRef.current || start === null) return;
+                if (Math.abs(event.clientX - start) <= MINI_SWIPE_PX) onExpand();
+            }}
+            onPointerCancel={() => { startXRef.current = null; }}
+            onKeyDown={event => {
+                if (event.key !== 'Enter' && event.key !== ' ') return;
+                event.preventDefault();
+                onExpand();
+            }}
+        >
+            <span className="relative block h-14 w-14 overflow-hidden rounded-2xl bg-black/40 shadow-lg">
+                {coverUrl && !coverFailed ? (
+                    <img
+                        src={coverUrl}
+                        alt=""
+                        draggable={false}
+                        onError={() => setCoverFailed(true)}
+                        className="h-full w-full select-none object-cover"
+                    />
+                ) : (
+                    <span className="grid h-full w-full place-items-center text-zinc-300/70">
+                        <Music size={22} aria-hidden />
+                    </span>
+                )}
+            </span>
         </div>
     );
 };
